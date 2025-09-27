@@ -1,17 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Navbar from "../components/Navbar";
 import RateLimitedUI from "../components/RateLimitedUI";
 import api from "../lib/axios";
 import toast from "react-hot-toast";
 import NoteCard from "../components/NoteCard";
 import NotesNotFound from "../components/NotesNotFound";
+import { AuthContext } from "../context/AuthContext";
 
 const HomePage = () => {
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      setNotes([]);
+      return;
+    }
+
     const fetchNotes = async () => {
       try {
         const res = await api.get("/notes");
@@ -21,7 +29,8 @@ const HomePage = () => {
         setIsRateLimited(false);
       } catch (error) {
         console.error("Error fetching notes", error);
-        if (error.response.status === 429) {
+
+        if (error.response?.status === 429) {
           setIsRateLimited(true);
         } else {
           toast.error("Failed to load notes");
@@ -32,11 +41,10 @@ const HomePage = () => {
     };
 
     fetchNotes();
-  }, []);
+  }, [user]);
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
+    <div className="min-h-screen bg-base-200 pt-16">
       {isRateLimited && <RateLimitedUI />}
 
       <div className="max-w-7xl mx-auto p-4 mt-6">
