@@ -6,13 +6,15 @@ import {
   updateNote,
   getNoteById,
 } from "../controllers/notesController.js";
+import authMiddleware from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", getAllNotes);
-router.get("/:id", getNoteById);
-router.post("/", createNote);
-router.put("/:id", updateNote);
-router.delete("/:id", deleteNote);
+// All routes below now require the user to be logged in
+router.get("/", authMiddleware, getAllNotes);
+router.get("/:id", authMiddleware, getNoteById);
+router.post("/", authMiddleware, createNote);
+router.put("/:id", authMiddleware, updateNote);
+router.delete("/:id", authMiddleware, deleteNote);
 
 export default router;
